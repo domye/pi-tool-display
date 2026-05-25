@@ -76,6 +76,7 @@
     "file-type": ">=21.3.1"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "tsx": "4.22.3",
     "typescript": "6.0.3"
   }
