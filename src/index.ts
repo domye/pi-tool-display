@@ -14,6 +14,7 @@ import {
 } from "./capabilities.js";
 import { registerToolDisplayCommand } from "./config-modal.js";
 import { registerToolDisplayOverrides } from "./tool-overrides.js";
+import { disposeAll, resetDisposed } from "./disposable.js";
 import { registerThinkingLabeling } from "./thinking-label.js";
 import registerNativeUserMessageBox from "./user-message-box-native.js";
 import {
@@ -33,6 +34,14 @@ function ownershipChanged(
 }
 
 export default function toolDisplayExtension(pi: ExtensionAPI): void {
+  resetDisposed();
+
+  pi.on("session_shutdown", (event: { reason: string }) => {
+    if (event.reason === "reload") {
+      disposeAll();
+    }
+  });
+
   const initial = loadToolDisplayConfig();
   let config: ToolDisplayConfig = initial.config;
   let pendingLoadError = initial.error;
