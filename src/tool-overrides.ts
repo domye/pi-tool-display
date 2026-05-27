@@ -18,7 +18,10 @@ import {
   createReadTool,
   createWriteTool,
   formatSize,
+  getAgentDir,
 } from "@earendil-works/pi-coding-agent";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Container, Spacer, Text } from "@earendil-works/pi-tui";
 import { renderBashCall } from "./bash-display.js";
 import { logToolDisplayDebug } from "./debug-logger.js";
@@ -260,6 +263,23 @@ function clearBuiltInToolCache(): void {
   builtInToolCache.clear();
 }
 
+function getBashToolOptions(): { shellPath?: string; commandPrefix?: string } {
+  try {
+    const agentDir = getAgentDir();
+    const settingsPath = join(agentDir, "settings.json");
+    if (existsSync(settingsPath)) {
+      const settings = JSON.parse(readFileSync(settingsPath, "utf8"));
+      return {
+        shellPath: settings.shellPath,
+        commandPrefix: settings.shellCommandPrefix,
+      };
+    }
+  } catch {
+    // Ignore errors
+  }
+  return {};
+}
+
 function getBuiltInTools(cwd: string): BuiltInTools {
   let tools = builtInToolCache.get(cwd);
   if (!tools) {
@@ -268,7 +288,7 @@ function getBuiltInTools(cwd: string): BuiltInTools {
       grep: createGrepTool(cwd),
       find: createFindTool(cwd),
       ls: createLsTool(cwd),
-      bash: createBashTool(cwd),
+      bash: createBashTool(cwd, getBashToolOptions()),
       edit: createEditTool(cwd),
       write: createWriteTool(cwd),
     };
